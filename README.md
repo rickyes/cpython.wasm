@@ -1,3 +1,3 @@
 ## CPython.wasm
 
-Compiling CPython into WebAssembly based on Emscripten
+Compiling CPython to WebAssembly based on Emscripten
