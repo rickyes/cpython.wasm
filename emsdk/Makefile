@@ -5,7 +5,7 @@ all: emsdk/.complete
 
 emsdk/.complete:
 	if [ -d emsdk ]; then rm -rf emsdk; fi
-	git clone https://github.com/juj/emsdk.git
+	git clone https://github.com/emscripten-core/emsdk
 	( \
 		cd emsdk && \
 		./emsdk install --build=Release sdk-fastcomp-tag-$(EMSCRIPTEN_VERSION)-64bit binaryen-tag-$(EMSCRIPTEN_VERSION)-64bit && \

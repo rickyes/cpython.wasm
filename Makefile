@@ -82,6 +82,9 @@ build/pyodide.asm.js: src/main.bc src/jsimport.bc src/jsproxy.bc src/js2python.b
 		$(LDFLAGS) -s FORCE_FILESYSTEM=1
 	rm build/pyodide.asm.html
 
+build/cpython.wasm:
+	$(CXX) -s EXPORT_NAME="'h'" -o build/h.js $(LDFLAGS) -s FORCE_FILESYSTEM=1
+
 
 env:
 	env
@@ -90,7 +93,7 @@ env:
 build/pyodide.asm.data: root/.built
 	( \
 		cd build; \
-		python $(FILEPACKAGER) pyodide.asm.data --abi=$(PYODIDE_PACKAGE_ABI) --lz4 --preload ../root/lib@lib --js-output=pyodide.asm.data.js --use-preload-plugins \
+		python3 $(FILEPACKAGER) pyodide.asm.data --abi=$(PYODIDE_PACKAGE_ABI) --lz4 --preload ../root/lib@lib --js-output=pyodide.asm.data.js --use-preload-plugins \
 	)
 	uglifyjs build/pyodide.asm.data.js -o build/pyodide.asm.data.js
 
@@ -138,8 +141,8 @@ lint:
 
 
 benchmark: all
-	python benchmark/benchmark.py $(HOSTPYTHON) build/benchmarks.json
-	python benchmark/plot_benchmark.py build/benchmarks.json build/benchmarks.png
+	python3 benchmark/benchmark.py $(HOSTPYTHON) build/benchmarks.json
+	python3 benchmark/plot_benchmark.py build/benchmarks.json build/benchmarks.png
 
 
 clean:
@@ -165,7 +168,7 @@ build/test.data: $(CPYTHONLIB)
 	)
 	( \
 		cd build; \
-		python $(FILEPACKAGER) test.data --abi=$(PYODIDE_PACKAGE_ABI) --lz4 --preload ../$(CPYTHONLIB)/test@/lib/python3.7/test --js-output=test.js --export-name=pyodide._module --exclude __pycache__ \
+		python3 $(FILEPACKAGER) test.data --abi=$(PYODIDE_PACKAGE_ABI) --lz4 --preload ../$(CPYTHONLIB)/test@/lib/python3.7/test --js-output=test.js --export-name=pyodide._module --exclude __pycache__ \
 	)
 	uglifyjs build/test.js -o build/test.js
 
@@ -263,4 +266,4 @@ emsdk/emsdk/.complete:
 FORCE:
 
 check:
-	./tools/dependency-check.sh
+	sh ./tools/dependency-check.sh
