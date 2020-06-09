@@ -1,8 +1,6 @@
-PYODIDE_ROOT=$(abspath .)
+CPYTHONWASM_ROOT=$(abspath .)
 include Makefile.envs
 .PHONY=check
-
-FILEPACKAGER=$(PYODIDE_ROOT)/tools/file_packager.py
 
 CPYTHONROOT=cpython
 CPYTHONLIB=$(CPYTHONROOT)/installs/python-$(PYVERSION)/lib/python$(PYMINOR)
@@ -10,8 +8,8 @@ CPYTHONLIB=$(CPYTHONROOT)/installs/python-$(PYVERSION)/lib/python$(PYMINOR)
 LZ4LIB=lz4/lz4-1.8.3/lib/liblz4.a
 CLAPACK=CLAPACK/CLAPACK-WA/lapack_WA.bc
 
-PYODIDE_EMCC=$(PYODIDE_ROOT)/ccache/emcc
-PYODIDE_CXX=$(PYODIDE_ROOT)/ccache/em++
+CPYTHONWASM_EMCC=$(CPYTHONWASM_ROOT)/ccache/emcc
+CPYTHONWASM_CXX=$(CPYTHONWASM_ROOT)/ccache/em++
 
 SHELL := /bin/bash
 CC=emcc
@@ -60,89 +58,21 @@ PARSO_LIBS=$(PARSO_ROOT)/__init__.py
 SITEPACKAGES=root/lib/python$(PYMINOR)/site-packages
 
 all: check \
-	build/pyodide.asm.js \
-	build/pyodide.asm.data \
-	build/pyodide.js \
-	build/pyodide_dev.js \
-	build/console.html \
-	build/renderedhtml.css \
-	build/test.data \
-	build/packages.json \
-	build/test.html \
-	build/webworker.js \
-	build/webworker_dev.js
+	build/cpython.asm.js \
 	echo -e "\nSUCCESS!"
 
 
-build/pyodide.asm.js: src/main.bc src/jsimport.bc src/jsproxy.bc src/js2python.bc \
+build/cpython.asm.js: src/main.bc src/jsimport.bc src/jsproxy.bc src/js2python.bc \
 		src/pyimport.bc src/pyproxy.bc src/python2js.bc src/python2js_buffer.bc \
 		src/runpython.bc src/hiwire.bc
 	[ -d build ] || mkdir build
-	$(CXX) -s EXPORT_NAME="'pyodide'" -o build/pyodide.asm.html $(filter %.bc,$^) \
+	$(CXX) -s EXPORT_NAME="'cpython'" -o build/cpython.asm.html $(filter %.bc,$^) \
 		$(LDFLAGS) -s FORCE_FILESYSTEM=1
-	rm build/pyodide.asm.html
-
-build/cpython.wasm:
-	$(CXX) -s EXPORT_NAME="'h'" -o build/h.js $(LDFLAGS) -s FORCE_FILESYSTEM=1
+	rm build/cpython.asm.html
 
 
 env:
 	env
-
-
-build/pyodide.asm.data: root/.built
-	( \
-		cd build; \
-		python3 $(FILEPACKAGER) pyodide.asm.data --abi=$(PYODIDE_PACKAGE_ABI) --lz4 --preload ../root/lib@lib --js-output=pyodide.asm.data.js --use-preload-plugins \
-	)
-	uglifyjs build/pyodide.asm.data.js -o build/pyodide.asm.data.js
-
-
-build/pyodide_dev.js: src/pyodide.js
-	cp $< $@
-	sed -i -e "s#{{DEPLOY}}#./#g" $@
-	sed -i -e "s#{{ABI}}#$(PYODIDE_PACKAGE_ABI)#g" $@
-
-
-build/pyodide.js: src/pyodide.js
-	cp $< $@
-	sed -i -e 's#{{DEPLOY}}#https://pyodide-cdn2.iodide.io/v0.15.0/full/#g' $@
-
-	sed -i -e "s#{{ABI}}#$(PYODIDE_PACKAGE_ABI)#g" $@
-
-
-build/test.html: src/test.html
-	cp $< $@
-
-
-build/console.html: src/console.html
-	cp $< $@
-
-
-build/renderedhtml.css: src/renderedhtml.less
-	lessc $< $@
-
-build/webworker.js: src/webworker.js
-	cp $< $@
-	sed -i -e 's#{{DEPLOY}}#https://pyodide-cdn2.iodide.io/v0.15.0/full/#g' $@
-
-build/webworker_dev.js: src/webworker.js
-	cp $< $@
-	sed -i -e "s#{{DEPLOY}}#./#g" $@
-	sed -i -e "s#pyodide.js#pyodide_dev.js#g" $@
-
-test: all
-	pytest test packages pyodide_build -v
-
-
-lint:
-	flake8 src test tools pyodide_build benchmark
-	clang-format -output-replacements-xml src/*.c src/*.h src/*.js | (! grep '<replacement ')
-
-
-benchmark: all
-	python3 benchmark/benchmark.py $(HOSTPYTHON) build/benchmarks.json
-	python3 benchmark/plot_benchmark.py build/benchmarks.json build/benchmarks.png
 
 
 clean:
@@ -161,50 +91,8 @@ clean:
 	$(CC) -o $@ -c $< $(CFLAGS)
 
 
-build/test.data: $(CPYTHONLIB)
-	( \
-		cd $(CPYTHONLIB)/test; \
-		find . -type d -name __pycache__ -prune -exec rm -rf {} \; \
-	)
-	( \
-		cd build; \
-		python3 $(FILEPACKAGER) test.data --abi=$(PYODIDE_PACKAGE_ABI) --lz4 --preload ../$(CPYTHONLIB)/test@/lib/python3.7/test --js-output=test.js --export-name=pyodide._module --exclude __pycache__ \
-	)
-	uglifyjs build/test.js -o build/test.js
-
-
-root/.built: \
-		$(CPYTHONLIB) \
-		$(SIX_LIBS) \
-		$(JEDI_LIBS) \
-		$(PARSO_LIBS) \
-		src/sitecustomize.py \
-		src/webbrowser.py \
-		src/pyodide.py \
-		remove_modules.txt
-	rm -rf root
-	mkdir -p root/lib
-	cp -r $(CPYTHONLIB) root/lib
-	mkdir -p $(SITEPACKAGES)
-	cp $(SIX_LIBS) $(SITEPACKAGES)
-	cp -r $(JEDI_ROOT) $(SITEPACKAGES)
-	cp -r $(PARSO_ROOT) $(SITEPACKAGES)
-	cp src/sitecustomize.py $(SITEPACKAGES)
-	cp src/webbrowser.py root/lib/python$(PYMINOR)
-	cp src/_testcapi.py	root/lib/python$(PYMINOR)
-	cp src/pystone.py root/lib/python$(PYMINOR)
-	cp src/pyodide.py root/lib/python$(PYMINOR)/site-packages
-	( \
-		cd root/lib/python$(PYMINOR); \
-		rm -fr `cat ../../../remove_modules.txt`; \
-		rm -fr test; \
-		find . -type d -name __pycache__ -prune -exec rm -rf {} \; \
-	)
-	touch root/.built
-
-
-$(PYODIDE_EMCC):
-	mkdir -p $(PYODIDE_ROOT)/ccache ; \
+$(CPYTHONWASM_EMCC):
+	mkdir -p $(CPYTHONWASM_ROOT)/ccache ; \
 	if test ! -h $@; then \
 		if hash ccache &>/dev/null; then \
 			ln -s `which ccache` $@ ; \
@@ -214,8 +102,8 @@ $(PYODIDE_EMCC):
 	fi
 
 
-$(PYODIDE_CXX):
-	mkdir -p $(PYODIDE_ROOT)/ccache ; \
+$(CPYTHONWASM_CXX):
+	mkdir -p $(CPYTHONWASM_ROOT)/ccache ; \
 	if test ! -h $@; then \
 		if hash ccache &>/dev/null; then \
 			ln -s `which ccache` $@ ; \
@@ -225,7 +113,7 @@ $(PYODIDE_CXX):
 	fi
 
 
-$(CPYTHONLIB): emsdk/emsdk/.complete $(PYODIDE_EMCC) $(PYODIDE_CXX)
+$(CPYTHONLIB): emsdk/emsdk/.complete $(CPYTHONWASM_EMCC) $(CPYTHONWASM_CXX)
 	make -C $(CPYTHONROOT)
 
 
@@ -246,8 +134,8 @@ $(PARSO_LIBS): $(CPYTHONLIB)
 
 
 $(CLAPACK): $(CPYTHONLIB)
-ifdef PYODIDE_PACKAGES
-	echo "Skipping BLAS/LAPACK build due to PYODIDE_PACKAGES being defined."
+ifdef CPYTHONWASM_PACKAGES
+	echo "Skipping BLAS/LAPACK build due to CPYTHONWASM_PACKAGES being defined."
 	echo "Build it manually with make -C CLAPACK if needed."
 	mkdir -p CLAPACK/CLAPACK-WA/
 	touch $(CLAPACK)
@@ -266,4 +154,4 @@ emsdk/emsdk/.complete:
 FORCE:
 
 check:
-	sh ./tools/dependency-check.sh
+	./tools/dependency-check.sh

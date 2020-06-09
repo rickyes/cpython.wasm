@@ -1,21 +1,21 @@
 export EMSCRIPTEN_VERSION = 1.38.31
 
-export PATH := $(PYODIDE_ROOT)/ccache:$(PYODIDE_ROOT)/emsdk/emsdk:$(PYODIDE_ROOT)/emsdk/emsdk/fastcomp-clang/tag-e$(EMSCRIPTEN_VERSION)/build_tag-e$(EMSCRIPTEN_VERSION)_64/bin:$(PYODIDE_ROOT)/emsdk/emsdk/node/8.9.1_64bit/bin:$(PYODIDE_ROOT)/emsdk/emsdk/emscripten/tag-$(EMSCRIPTEN_VERSION):$(PYODIDE_ROOT)/emsdk/emsdk/binaryen/tag-$(EMSCRIPTEN_VERSION)_64bit_binaryen/bin:$(PATH)
+export PATH := $(CPYTHONWASM_ROOT)/ccache:$(CPYTHONWASM_ROOT)/emsdk/emsdk:$(CPYTHONWASM_ROOT)/emsdk/emsdk/fastcomp-clang/tag-e$(EMSCRIPTEN_VERSION)/build_tag-e$(EMSCRIPTEN_VERSION)_64/bin:$(CPYTHONWASM_ROOT)/emsdk/emsdk/node/8.9.1_64bit/bin:$(CPYTHONWASM_ROOT)/emsdk/emsdk/emscripten/tag-$(EMSCRIPTEN_VERSION):$(CPYTHONWASM_ROOT)/emsdk/emsdk/binaryen/tag-$(EMSCRIPTEN_VERSION)_64bit_binaryen/bin:$(PATH)
 
-export EMSDK = $(PYODIDE_ROOT)/emsdk/emsdk
-export EM_CONFIG = $(PYODIDE_ROOT)/emsdk/emsdk/.emscripten
-export EM_CACHE = $(PYODIDE_ROOT)/emsdk/emsdk/.emscripten_cache
-export EMSCRIPTEN = $(PYODIDE_ROOT)/emsdk/emsdk/emscripten/tag-$(EMSCRIPTEN_VERSION)
-export BINARYEN_ROOT = $(PYODIDE_ROOT)/emsdk/emsdk/binaryen/tag-$(EMSCRIPTEN_VERSION)_64bit_binaryen
+export EMSDK = $(CPYTHONWASM_ROOT)/emsdk/emsdk
+export EM_CONFIG = $(CPYTHONWASM_ROOT)/emsdk/emsdk/.emscripten
+export EM_CACHE = $(CPYTHONWASM_ROOT)/emsdk/emsdk/.emscripten_cache
+export EMSCRIPTEN = $(CPYTHONWASM_ROOT)/emsdk/emsdk/emscripten/tag-$(EMSCRIPTEN_VERSION)
+export BINARYEN_ROOT = $(CPYTHONWASM_ROOT)/emsdk/emsdk/binaryen/tag-$(EMSCRIPTEN_VERSION)_64bit_binaryen
 
 export PYVERSION=3.7.4
 export PYMINOR=$(basename $(PYVERSION))
-export HOSTPYTHONROOT=$(PYODIDE_ROOT)/cpython/build/$(PYVERSION)/host
+export HOSTPYTHONROOT=$(CPYTHONWASM_ROOT)/cpython/build/$(PYVERSION)/host
 export HOSTPYTHON=$(HOSTPYTHONROOT)/bin/python3
-export TARGETPYTHONROOT=$(PYODIDE_ROOT)/cpython/installs/python-$(PYVERSION)
-export PYTHONINCLUDE=$(PYODIDE_ROOT)/cpython/installs/python-$(PYVERSION)/include/python$(PYMINOR)
+export TARGETPYTHONROOT=$(CPYTHONWASM_ROOT)/cpython/installs/python-$(PYVERSION)
+export PYTHONINCLUDE=$(CPYTHONWASM_ROOT)/cpython/installs/python-$(PYVERSION)/include/python$(PYMINOR)
 
-export PYODIDE_PACKAGE_ABI=1
+export CPYTHONWASM_PACKAGE_ABI=1
 
 export SIDE_LDFLAGS=\
 	-O3 \
