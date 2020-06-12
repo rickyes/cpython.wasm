@@ -61,7 +61,6 @@ all: check \
 	build/cpython.asm.js \
 	echo -e "\nSUCCESS!"
 
-
 build/cpython.asm.js: src/main.bc src/jsimport.bc src/jsproxy.bc src/js2python.bc \
 		src/pyimport.bc src/pyproxy.bc src/python2js.bc src/python2js_buffer.bc \
 		src/runpython.bc src/hiwire.bc
@@ -69,7 +68,6 @@ build/cpython.asm.js: src/main.bc src/jsimport.bc src/jsproxy.bc src/js2python.b
 	$(CXX) -s EXPORT_NAME="'cpython'" -o build/cpython.asm.html $(filter %.bc,$^) \
 		$(LDFLAGS) -s FORCE_FILESYSTEM=1
 	rm build/cpython.asm.html
-
 
 env:
 	env
