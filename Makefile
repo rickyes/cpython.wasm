@@ -72,7 +72,6 @@ build/cpython.asm.js: src/main.bc src/jsimport.bc src/jsproxy.bc src/js2python.b
 env:
 	env
 
-
 clean:
 	rm -fr root
 	rm -fr build/*
@@ -114,7 +113,6 @@ $(CPYTHONWASM_CXX):
 $(CPYTHONLIB): emsdk/emsdk/.complete $(CPYTHONWASM_EMCC) $(CPYTHONWASM_CXX)
 	make -C $(CPYTHONROOT)
 
-
 $(LZ4LIB):
 	make -C lz4
 
@@ -140,8 +138,6 @@ ifdef CPYTHONWASM_PACKAGES
 else
 	make -C CLAPACK
 endif
-
-
 
 build/packages.json: $(CLAPACK) FORCE
 	make -C packages
